@@ -7,7 +7,22 @@ services:
             dockerfile: ./docker/elixir/Dockerfile
         image: phoenixfeeds:latest
         restart: always
+        depends_on:
+            - postgres
         ports:
             - "4000:4000"
         volumes:
             - "./app/phxfeeds:/phxfeeds"
+    postgres:
+        container_name: postgres
+        build:
+            context: .
+            dockerfile: ./docker/postgres/Dockerfile
+        image: phxfeeds-postgrest:latest
+        restart: always
+        # env_file:
+            # - ./docker/postgres/postgres.env
+        ports:
+            - "5432:5432"
+        volumes:
+            - ./pgdata:/var/lib/postgresql/data

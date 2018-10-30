@@ -12,6 +12,11 @@ RUN mix local.hex --force \
 
 COPY ./app/phxfeeds/ .
 
+RUN mix deps.get \
+    && mix ecto.create
+
 RUN mix deps.get
 
-CMD mix phx.server
+ENTRYPOINT mix phx.server
+
+CMD foreground
