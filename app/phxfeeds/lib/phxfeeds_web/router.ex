@@ -7,5 +7,6 @@ defmodule PhxfeedsWeb.Router do
 
   scope "/api", PhxfeedsWeb do
     pipe_through :api
+    resources "/feeds", FeedController, except: [:new, :edit]                                                                         
   end
 end
