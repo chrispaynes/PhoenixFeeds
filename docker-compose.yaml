@@ -1,7 +1,23 @@
 version: '3'
+networks:
+    proxy:
 services:
-    app:
-        container_name: app
+    traefik:
+        image: traefik
+        command: --web --docker
+        container_name: tproxy
+        networks:
+            - proxy
+        ports:
+            - "80:80"
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+        labels:
+            - "traefik.backend=traefik"
+            - "traefik.frontend.rule=Host:traefik.localhost"
+            - "traefik.port=8080"
+    api:
+        container_name: api
         build:
             context: .
             dockerfile: ./docker/elixir/Dockerfile
@@ -11,8 +27,30 @@ services:
             - postgres
         ports:
             - "4000:4000"
+        labels:
+            - "traefik.backend=api"
+            - "traefik.frontend.rule=Host:phxfeeds.api.localhost"
+            - "traefik.docker.network=proxy"
+            - "traefik.port=4000"
         volumes:
             - "./app/phxfeeds:/phxfeeds"
+    ui:
+        container_name: ui
+        build:
+            context: .
+            dockerfile: ./docker/node/Dockerfile
+        networks:
+            - proxy
+        depends_on:
+            - api
+        ports:
+            - "3000:3000"
+        restart: always
+        labels:
+            - "traefik.backend=ui"
+            - "traefik.frontend.rule=Host:phxfeeds.ui.localhost"
+            - "traefik.docker.network=proxy"
+            - "traefik.port=3000"
     postgres:
         container_name: postgres
         build:
@@ -24,5 +62,7 @@ services:
             # - ./docker/postgres/postgres.env
         ports:
             - "5432:5432"
+        labels:
+            - "traefik.enable=false"
         volumes:
             - ./pgdata:/var/lib/postgresql/data
