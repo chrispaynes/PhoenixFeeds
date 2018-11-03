@@ -51,6 +51,8 @@ services:
             - "traefik.frontend.rule=Host:phxfeeds.ui.localhost"
             - "traefik.docker.network=proxy"
             - "traefik.port=3000"
+        volumes:
+            - "./app/phxfeeds_ui:/app"
     postgres:
         container_name: postgres
         build:
