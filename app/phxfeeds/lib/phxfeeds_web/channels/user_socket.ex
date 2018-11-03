@@ -1,8 +1,7 @@
 defmodule PhxfeedsWeb.UserSocket do
   use Phoenix.Socket
 
-  ## Channels
-  # channel "room:*", PhxfeedsWeb.RoomChannel
+  channel "feeds", RealtimeFeedApi.FeedChannel
 
   # Socket params are passed from the client and can
   # be used to verify and authenticate a user. After

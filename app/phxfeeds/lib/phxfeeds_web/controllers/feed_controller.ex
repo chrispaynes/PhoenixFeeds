@@ -12,11 +12,20 @@ defmodule PhxfeedsWeb.FeedController do
   end
 
   def create(conn, %{"feed" => feed_params}) do
-    with {:ok, %Feed{} = feed} <- Feeds.create_feed(feed_params) do
-      conn
-      |> put_status(:created)
-      |> put_resp_header("location", Routes.feed_path(conn, :show, feed))
-      |> render("show.json", feed: feed)
+    changeset = Feed.changeset(%Feed{}, feed_params)
+
+    case Repo.insert(changeset) do
+      {:ok, feed} ->
+        PhxFeeds.FeedChannel.create_broadcast(feed)
+
+        conn
+        |> put_status(:created)
+        |> put_resp_header("location", Routes.feed_path(conn, :show, feed))
+        |> render("show.json", feed: feed)
+     {:error, changeset} ->
+        conn
+          |> put_status(:unprocessable_entity)
+          |> render(PhxfeedsApi.Changeset, "error.json", changeset: changeset)
     end
   end
 
